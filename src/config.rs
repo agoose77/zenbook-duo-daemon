@@ -60,6 +60,8 @@ pub struct TouchpadConfig {
     pub right_border_percent: f64,
     #[serde(default = "default_touchpad_top_border_percent")]
     pub top_border_percent: f64,
+    #[serde(default = "default_touchpad_top_play_pause_enabled")]
+    pub top_play_pause_enabled: bool,
     #[serde(default = "default_touchpad_double_tap_seek_seconds")]
     pub double_tap_seek_seconds: u64,
     #[serde(default = "default_touchpad_brightness_step_percent")]
@@ -88,6 +90,7 @@ impl Default for TouchpadConfig {
             left_border_percent: default_touchpad_left_border_percent(),
             right_border_percent: default_touchpad_right_border_percent(),
             top_border_percent: default_touchpad_top_border_percent(),
+            top_play_pause_enabled: default_touchpad_top_play_pause_enabled(),
             double_tap_seek_seconds: default_touchpad_double_tap_seek_seconds(),
             brightness_step_percent: default_touchpad_brightness_step_percent(),
             volume_step_percent: default_touchpad_volume_step_percent(),
@@ -119,6 +122,10 @@ fn default_touchpad_right_border_percent() -> f64 {
 
 fn default_touchpad_top_border_percent() -> f64 {
     8.0
+}
+
+fn default_touchpad_top_play_pause_enabled() -> bool {
+    true
 }
 
 fn default_touchpad_double_tap_seek_seconds() -> u64 {
@@ -260,6 +267,7 @@ impl Config {
 # left_border_percent = 5.0  # Left edge zone for brightness gestures
 # right_border_percent = 5.0 # Right edge zone for volume gestures
 # top_border_percent = 8.0   # Top edge zone for media seek gestures
+# top_play_pause_enabled = true # Center top-edge tap toggles media playback
         ".trim();
         let config_str = format!("{}\n\n\n{}", help, config_str);
 

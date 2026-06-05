@@ -30,6 +30,7 @@ const TOUCHPAD_VERSION: u16 = 0x0111;
 const VIRTUAL_TOUCHPAD_NAME: &str = "Zenbook Duo Daemon Touchpad";
 const TAP_TIMEOUT: Duration = Duration::from_millis(350);
 const TAP_MOVEMENT_THRESHOLD: f64 = 0.025;
+const TOP_PLAY_PAUSE_ZONE_WIDTH: f64 = 0.12;
 const STEP_EPSILON: f64 = 0.000_001;
 
 pub fn start_touchpad_monitor_task(
@@ -307,6 +308,11 @@ fn execute_touchpad_action(
                     .await;
             });
         }
+        TouchpadAction::PlayPause => {
+            tokio::spawn(async move {
+                mpris_tracker.play_pause().await;
+            });
+        }
         TouchpadAction::ScheduleDoubleTap(corner) => {
             let generation = tap_generation.fetch_add(1, Ordering::SeqCst) + 1;
             tokio::spawn(async move {
@@ -463,6 +469,7 @@ impl GestureEngine {
                     self.config.left_border_percent,
                     self.config.right_border_percent,
                     self.config.top_border_percent,
+                    self.config.top_play_pause_enabled,
                 );
                 self.active_gesture = Some(ActiveGesture::new(zone, point));
                 debug!("Touchpad gesture started in {:?}", zone);
@@ -554,6 +561,9 @@ impl ActiveGesture {
             TouchZone::TopBorder => {
                 actions.extend(self.top_seek_actions(point, now));
             }
+            TouchZone::TopPlayPause => {
+                actions.extend(self.top_seek_actions(point, now));
+            }
             _ => {}
         }
 
@@ -567,6 +577,7 @@ impl ActiveGesture {
             TouchZone::LeftCorner | TouchZone::RightCorner if self.is_tap() => {
                 tap_tracker.register(self.zone.corner().unwrap())
             }
+            TouchZone::TopPlayPause if self.is_tap() => tap_tracker.register_play_pause(),
             _ => Vec::new(),
         }
     }
@@ -630,6 +641,7 @@ struct TapTracker {
     last_corner: Option<Corner>,
     last_tap_at: Option<Instant>,
     count: u8,
+    last_play_pause_tap_at: Option<Instant>,
 }
 
 impl TapTracker {
@@ -657,6 +669,21 @@ impl TapTracker {
             _ => Vec::new(),
         }
     }
+
+    fn register_play_pause(&mut self) -> Vec<TouchpadAction> {
+        let now = Instant::now();
+        let is_double_tap = self
+            .last_play_pause_tap_at
+            .is_some_and(|last_tap_at| now.duration_since(last_tap_at) <= TAP_TIMEOUT);
+
+        self.last_play_pause_tap_at = Some(now);
+        if is_double_tap {
+            self.last_play_pause_tap_at = None;
+            vec![TouchpadAction::PlayPause]
+        } else {
+            Vec::new()
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -671,6 +698,7 @@ enum TouchZone {
     LeftBorder,
     RightBorder,
     TopBorder,
+    TopPlayPause,
     LeftCorner,
     RightCorner,
 }
@@ -694,6 +722,7 @@ enum Corner {
 enum TouchpadAction {
     RunCommand(String),
     TopSeek { fraction: f64, speed: f64 },
+    PlayPause,
     ScheduleDoubleTap(Corner),
     TripleTap(Corner),
 }
@@ -703,6 +732,7 @@ fn classify_zone(
     left_border_percent: f64,
     right_border_percent: f64,
     top_border_percent: f64,
+    top_play_pause_enabled: bool,
 ) -> TouchZone {
     let left_border = percent_to_fraction(left_border_percent);
     let right_border = percent_to_fraction(right_border_percent);
@@ -713,6 +743,9 @@ fn classify_zone(
             TouchZone::LeftCorner
         } else if point.x >= 1.0 - right_border {
             TouchZone::RightCorner
+        } else if top_play_pause_enabled && (point.x - 0.5).abs() <= TOP_PLAY_PAUSE_ZONE_WIDTH / 2.0
+        {
+            TouchZone::TopPlayPause
         } else {
             TouchZone::TopBorder
         }
@@ -736,11 +769,11 @@ mod tests {
     #[test]
     fn classifies_overlapping_top_corners_before_borders() {
         assert_eq!(
-            classify_zone(TouchPoint { x: 0.05, y: 0.05 }, 10.0, 10.0, 12.0),
+            classify_zone(TouchPoint { x: 0.05, y: 0.05 }, 10.0, 10.0, 12.0, true),
             TouchZone::LeftCorner
         );
         assert_eq!(
-            classify_zone(TouchPoint { x: 0.95, y: 0.05 }, 10.0, 10.0, 12.0),
+            classify_zone(TouchPoint { x: 0.95, y: 0.05 }, 10.0, 10.0, 12.0, true),
             TouchZone::RightCorner
         );
     }
@@ -748,21 +781,46 @@ mod tests {
     #[test]
     fn classifies_left_right_top_and_normal_zones() {
         assert_eq!(
-            classify_zone(TouchPoint { x: 0.05, y: 0.5 }, 10.0, 10.0, 12.0),
+            classify_zone(TouchPoint { x: 0.05, y: 0.5 }, 10.0, 10.0, 12.0, true),
             TouchZone::LeftBorder
         );
         assert_eq!(
-            classify_zone(TouchPoint { x: 0.95, y: 0.5 }, 10.0, 10.0, 12.0),
+            classify_zone(TouchPoint { x: 0.95, y: 0.5 }, 10.0, 10.0, 12.0, true),
             TouchZone::RightBorder
         );
         assert_eq!(
-            classify_zone(TouchPoint { x: 0.5, y: 0.05 }, 10.0, 10.0, 12.0),
+            classify_zone(TouchPoint { x: 0.5, y: 0.05 }, 10.0, 10.0, 12.0, true),
+            TouchZone::TopPlayPause
+        );
+        assert_eq!(
+            classify_zone(TouchPoint { x: 0.4, y: 0.05 }, 10.0, 10.0, 12.0, true),
             TouchZone::TopBorder
         );
         assert_eq!(
-            classify_zone(TouchPoint { x: 0.5, y: 0.5 }, 10.0, 10.0, 12.0),
+            classify_zone(TouchPoint { x: 0.5, y: 0.5 }, 10.0, 10.0, 12.0, true),
             TouchZone::Normal
         );
+    }
+
+    #[test]
+    fn top_middle_play_pause_zone_can_be_disabled() {
+        assert_eq!(
+            classify_zone(TouchPoint { x: 0.5, y: 0.05 }, 10.0, 10.0, 12.0, false),
+            TouchZone::TopBorder
+        );
+    }
+
+    #[test]
+    fn top_middle_double_tap_toggles_play_pause() {
+        let gesture = ActiveGesture::new(TouchZone::TopPlayPause, TouchPoint { x: 0.5, y: 0.05 });
+        let mut tap_tracker = TapTracker::default();
+
+        assert!(gesture.finish(&mut tap_tracker).is_empty());
+
+        assert!(matches!(
+            gesture.finish(&mut tap_tracker).as_slice(),
+            [TouchpadAction::PlayPause]
+        ));
     }
 
     #[test]

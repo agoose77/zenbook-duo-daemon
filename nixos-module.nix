@@ -53,6 +53,7 @@ let
     left_border_percent = ${toString cfg.touchpad.leftBorderPercent}
     right_border_percent = ${toString cfg.touchpad.rightBorderPercent}
     top_border_percent = ${toString cfg.touchpad.topBorderPercent}
+    top_play_pause_enabled = ${if cfg.touchpad.topPlayPauseEnabled then "true" else "false"}
     double_tap_seek_seconds = ${toString cfg.touchpad.doubleTapSeekSeconds}
     brightness_step_percent = ${toString cfg.touchpad.brightnessStepPercent}
     volume_step_percent = ${toString cfg.touchpad.volumeStepPercent}
@@ -203,7 +204,13 @@ in
       topBorderPercent = mkOption {
         type = types.float;
         default = 8.0;
-        description = "Top touchpad border height as a percentage, used for media seeking and corner taps";
+        description = "Top touchpad border height as a percentage, used for media seeking, play/pause taps, and corner taps";
+      };
+
+      topPlayPauseEnabled = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable tapping the center of the top touchpad border to toggle media playback";
       };
 
       doubleTapSeekSeconds = mkOption {

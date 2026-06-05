@@ -84,7 +84,6 @@ impl MprisTracker {
         self.player_command("previous").await;
     }
 
-    #[allow(dead_code)]
     pub async fn play_pause(&self) {
         self.player_command("play-pause").await;
     }
