@@ -190,19 +190,19 @@ in
 
       leftBorderPercent = mkOption {
         type = types.float;
-        default = 8.0;
+        default = 5.0;
         description = "Left touchpad border width as a percentage, used for brightness gestures";
       };
 
       rightBorderPercent = mkOption {
         type = types.float;
-        default = 8.0;
+        default = 5.0;
         description = "Right touchpad border width as a percentage, used for volume gestures";
       };
 
       topBorderPercent = mkOption {
         type = types.float;
-        default = 10.0;
+        default = 8.0;
         description = "Top touchpad border height as a percentage, used for media seeking and corner taps";
       };
 

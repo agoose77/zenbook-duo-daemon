@@ -110,15 +110,15 @@ fn default_touchpad_device_name() -> String {
 }
 
 fn default_touchpad_left_border_percent() -> f64 {
-    8.0
+    5.0
 }
 
 fn default_touchpad_right_border_percent() -> f64 {
-    8.0
+    5.0
 }
 
 fn default_touchpad_top_border_percent() -> f64 {
-    10.0
+    8.0
 }
 
 fn default_touchpad_double_tap_seek_seconds() -> u64 {
@@ -257,9 +257,9 @@ impl Config {
 #
 # [touchpad]
 # enabled = true
-# left_border_percent = 8.0  # Left edge zone for brightness gestures
-# right_border_percent = 8.0 # Right edge zone for volume gestures
-# top_border_percent = 10.0   # Top edge zone for media seek gestures
+# left_border_percent = 5.0  # Left edge zone for brightness gestures
+# right_border_percent = 5.0 # Right edge zone for volume gestures
+# top_border_percent = 8.0   # Top edge zone for media seek gestures
         ".trim();
         let config_str = format!("{}\n\n\n{}", help, config_str);
 
