@@ -12,9 +12,12 @@ use crate::{
     events::Event,
     idle_detection::start_idle_detection_task,
     keyboard_usb::{find_wired_keyboard, start_usb_keyboard_monitor_task, start_usb_keyboard_task},
+    mpris::MprisTracker,
     secondary_display::start_secondary_display_task,
     state::{KeyboardBacklightState, KeyboardStateManager},
+    touchpad::start_touchpad_monitor_task,
     unix_pipe::start_receive_commands_task,
+    user_commands::UserCommandRunner,
     virtual_keyboard::VirtualKeyboard,
 };
 use clap::Parser;
@@ -43,15 +46,18 @@ mod events;
 mod idle_detection;
 mod keyboard_bt;
 mod keyboard_usb;
+mod mpris;
 mod mute_state;
 mod secondary_display;
 mod state;
+mod touchpad;
 mod unix_pipe;
+mod user_commands;
 mod virtual_keyboard;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
-    env_logger::init();
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
     let args = Args::parse();
 
@@ -154,6 +160,17 @@ async fn run_daemon(config_path: PathBuf) {
         state_manager.clone(),
         activity_notifier.clone(),
     );
+
+    if config.touchpad.enabled {
+        let user_command_runner = UserCommandRunner::default();
+        let mpris_tracker = MprisTracker::start(&config.touchpad, user_command_runner.clone());
+        start_touchpad_monitor_task(
+            &config,
+            activity_notifier.clone(),
+            mpris_tracker,
+            user_command_runner,
+        );
+    }
 
     start_listen_mute_state_thread(state_manager.clone());
 

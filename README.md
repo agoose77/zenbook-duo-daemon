@@ -22,6 +22,7 @@ AI Generated Wiki: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://dee
 - ✅ Disable keyboard backlight when idle
 - ✅ Brightness sync between primary and secondary display
 - ✅ Remap keys to run custom commands or key combinations
+- ✅ Remap keyboard touchpad edge gestures for brightness, volume, and media control
 
 | Keyboard Function               | Wired Mode | Bluetooth Mode | Default Mapping              | Remappable via config file? |
 | ------------------------------- | ---------- | -------------- | ---------------------------- | --------------------------- |
@@ -88,6 +89,8 @@ The install script will:
 ## Configuration
 
 By default, the config file is located at `/etc/zenbook-duo-daemon/config.toml`. You can edit the fn lock, idle timeout, key mappings and keyboard VID:PID in the config file. The instructions are provided in the config file.
+
+Touchpad remapping can be configured in the `[touchpad]` section. The daemon grabs the Zenbook Duo keyboard touchpad, re-emits normal pointer events through a virtual touchpad, and reserves the configured left, right, top, and top-corner regions for gestures. Media controls use `playerctl`; volume uses `wpctl`; brightness uses `qs` with a `brightnessctl` fallback by default. These commands are run in the active graphical user session.
 
 ## Control Pipe
 

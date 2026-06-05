@@ -47,6 +47,22 @@ let
     fn_lock = ${if cfg.fnLock then "true" else "false"}
     idle_timeout_seconds = ${toString cfg.idleTimeoutSeconds}
 
+    [touchpad]
+    enabled = ${if cfg.touchpad.enable then "true" else "false"}
+    device_name = "${cfg.touchpad.deviceName}"
+    left_border_percent = ${toString cfg.touchpad.leftBorderPercent}
+    right_border_percent = ${toString cfg.touchpad.rightBorderPercent}
+    top_border_percent = ${toString cfg.touchpad.topBorderPercent}
+    double_tap_seek_seconds = ${toString cfg.touchpad.doubleTapSeekSeconds}
+    brightness_step_percent = ${toString cfg.touchpad.brightnessStepPercent}
+    volume_step_percent = ${toString cfg.touchpad.volumeStepPercent}
+    brightness_increment_command = "${cfg.touchpad.brightnessIncrementCommand}"
+    brightness_decrement_command = "${cfg.touchpad.brightnessDecrementCommand}"
+    volume_increment_command = "${cfg.touchpad.volumeIncrementCommand}"
+    volume_decrement_command = "${cfg.touchpad.volumeDecrementCommand}"
+    player_list_interval_seconds = ${toString cfg.touchpad.playerListIntervalSeconds}
+    player_position_interval_seconds = ${toString cfg.touchpad.playerPositionIntervalSeconds}
+
     [keyboard_backlight_key]
     ${keyFunctionToToml cfg.keyMappings.keyboardBacklight}
 
@@ -157,6 +173,92 @@ in
       type = types.int;
       default = 300;
       description = "Idle timeout in seconds before disabling keyboard backlight (0 to disable)";
+    };
+
+    touchpad = {
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable touchpad border and corner gesture remapping";
+      };
+
+      deviceName = mkOption {
+        type = types.str;
+        default = "Primax Electronics Ltd. ASUS Zenbook Duo Keyboard Touchpad";
+        description = "evdev device name of the keyboard touchpad";
+      };
+
+      leftBorderPercent = mkOption {
+        type = types.float;
+        default = 8.0;
+        description = "Left touchpad border width as a percentage, used for brightness gestures";
+      };
+
+      rightBorderPercent = mkOption {
+        type = types.float;
+        default = 8.0;
+        description = "Right touchpad border width as a percentage, used for volume gestures";
+      };
+
+      topBorderPercent = mkOption {
+        type = types.float;
+        default = 10.0;
+        description = "Top touchpad border height as a percentage, used for media seeking and corner taps";
+      };
+
+      doubleTapSeekSeconds = mkOption {
+        type = types.int;
+        default = 10;
+        description = "Number of seconds to seek on a double tap in a top corner";
+      };
+
+      brightnessStepPercent = mkOption {
+        type = types.float;
+        default = 5.0;
+        description = "Gesture progress percentage required for one brightness command step";
+      };
+
+      volumeStepPercent = mkOption {
+        type = types.float;
+        default = 2.0;
+        description = "Gesture progress percentage required for one volume command step";
+      };
+
+      brightnessIncrementCommand = mkOption {
+        type = types.str;
+        default = "qs -c $qsConfig ipc call brightness increment || brightnessctl s 5%+";
+        description = "Command run as the active graphical user to increase brightness";
+      };
+
+      brightnessDecrementCommand = mkOption {
+        type = types.str;
+        default = "qs -c $qsConfig ipc call brightness decrement || brightnessctl s 5%-";
+        description = "Command run as the active graphical user to decrease brightness";
+      };
+
+      volumeIncrementCommand = mkOption {
+        type = types.str;
+        default = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+ -l 1.5";
+        description = "Command run as the active graphical user to increase volume";
+      };
+
+      volumeDecrementCommand = mkOption {
+        type = types.str;
+        default = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%- -l 1.5";
+        description = "Command run as the active graphical user to decrease volume";
+      };
+
+      playerListIntervalSeconds = mkOption {
+        type = types.int;
+        default = 5;
+        description = "Interval for refreshing playerctl's MPRIS player list";
+      };
+
+      playerPositionIntervalSeconds = mkOption {
+        type = types.int;
+        default = 1;
+        description = "Interval for polling MPRIS player status and position";
+      };
     };
 
     keyMappings = {

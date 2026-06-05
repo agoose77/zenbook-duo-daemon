@@ -49,6 +49,115 @@ impl KeyFunction {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+pub struct TouchpadConfig {
+    #[serde(default = "default_touchpad_enabled")]
+    pub enabled: bool,
+    #[serde(default = "default_touchpad_device_name")]
+    pub device_name: String,
+    #[serde(default = "default_touchpad_left_border_percent")]
+    pub left_border_percent: f64,
+    #[serde(default = "default_touchpad_right_border_percent")]
+    pub right_border_percent: f64,
+    #[serde(default = "default_touchpad_top_border_percent")]
+    pub top_border_percent: f64,
+    #[serde(default = "default_touchpad_double_tap_seek_seconds")]
+    pub double_tap_seek_seconds: u64,
+    #[serde(default = "default_touchpad_brightness_step_percent")]
+    pub brightness_step_percent: f64,
+    #[serde(default = "default_touchpad_volume_step_percent")]
+    pub volume_step_percent: f64,
+    #[serde(default = "default_touchpad_brightness_increment_command")]
+    pub brightness_increment_command: String,
+    #[serde(default = "default_touchpad_brightness_decrement_command")]
+    pub brightness_decrement_command: String,
+    #[serde(default = "default_touchpad_volume_increment_command")]
+    pub volume_increment_command: String,
+    #[serde(default = "default_touchpad_volume_decrement_command")]
+    pub volume_decrement_command: String,
+    #[serde(default = "default_touchpad_player_list_interval_seconds")]
+    pub player_list_interval_seconds: u64,
+    #[serde(default = "default_touchpad_player_position_interval_seconds")]
+    pub player_position_interval_seconds: u64,
+}
+
+impl Default for TouchpadConfig {
+    fn default() -> Self {
+        Self {
+            enabled: default_touchpad_enabled(),
+            device_name: default_touchpad_device_name(),
+            left_border_percent: default_touchpad_left_border_percent(),
+            right_border_percent: default_touchpad_right_border_percent(),
+            top_border_percent: default_touchpad_top_border_percent(),
+            double_tap_seek_seconds: default_touchpad_double_tap_seek_seconds(),
+            brightness_step_percent: default_touchpad_brightness_step_percent(),
+            volume_step_percent: default_touchpad_volume_step_percent(),
+            brightness_increment_command: default_touchpad_brightness_increment_command(),
+            brightness_decrement_command: default_touchpad_brightness_decrement_command(),
+            volume_increment_command: default_touchpad_volume_increment_command(),
+            volume_decrement_command: default_touchpad_volume_decrement_command(),
+            player_list_interval_seconds: default_touchpad_player_list_interval_seconds(),
+            player_position_interval_seconds: default_touchpad_player_position_interval_seconds(),
+        }
+    }
+}
+
+fn default_touchpad_enabled() -> bool {
+    true
+}
+
+fn default_touchpad_device_name() -> String {
+    "Primax Electronics Ltd. ASUS Zenbook Duo Keyboard Touchpad".to_string()
+}
+
+fn default_touchpad_left_border_percent() -> f64 {
+    8.0
+}
+
+fn default_touchpad_right_border_percent() -> f64 {
+    8.0
+}
+
+fn default_touchpad_top_border_percent() -> f64 {
+    10.0
+}
+
+fn default_touchpad_double_tap_seek_seconds() -> u64 {
+    10
+}
+
+fn default_touchpad_brightness_step_percent() -> f64 {
+    5.0
+}
+
+fn default_touchpad_volume_step_percent() -> f64 {
+    2.0
+}
+
+fn default_touchpad_brightness_increment_command() -> String {
+    "qs -c $qsConfig ipc call brightness increment || brightnessctl s 5%+".to_string()
+}
+
+fn default_touchpad_brightness_decrement_command() -> String {
+    "qs -c $qsConfig ipc call brightness decrement || brightnessctl s 5%-".to_string()
+}
+
+fn default_touchpad_volume_increment_command() -> String {
+    "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+ -l 1.5".to_string()
+}
+
+fn default_touchpad_volume_decrement_command() -> String {
+    "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%- -l 1.5".to_string()
+}
+
+fn default_touchpad_player_list_interval_seconds() -> u64 {
+    5
+}
+
+fn default_touchpad_player_position_interval_seconds() -> u64 {
+    1
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Config {
     usb_vendor_id: String,
     usb_product_id: String,
@@ -67,6 +176,8 @@ pub struct Config {
     pub pipe_path: String,
     /// Idle timeout in seconds. Set to 0 to disable idle detection.
     pub idle_timeout_seconds: u64,
+    #[serde(default)]
+    pub touchpad: TouchpadConfig,
 }
 
 impl Config {
@@ -119,6 +230,7 @@ impl Default for Config {
                 .to_string(),
             pipe_path: "/tmp/zenbook-duo-daemon.pipe".to_string(),
             idle_timeout_seconds: 300, // 5 minutes
+            touchpad: TouchpadConfig::default(),
         }
     }
 }
@@ -142,6 +254,12 @@ impl Config {
 #
 # fn_lock = true             # To input F1-F12, you need to press Fn + F1-F12
 # idle_timeout_seconds = 300 # 5 minutes, set to 0 to disable idle detection
+#
+# [touchpad]
+# enabled = true
+# left_border_percent = 8.0  # Left edge zone for brightness gestures
+# right_border_percent = 8.0 # Right edge zone for volume gestures
+# top_border_percent = 10.0   # Top edge zone for media seek gestures
         ".trim();
         let config_str = format!("{}\n\n\n{}", help, config_str);
 
