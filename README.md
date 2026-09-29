@@ -2,7 +2,7 @@
 
 This is a daemon that runs on the Zenbook Duo laptop to handle the keyboard and secondary display under linux.
 
-AI Generated Wiki: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/PegasisForever/zenbook-duo-daemon)
+AI Generated Wiki: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/0Tick/zenbook-duo-daemon)
 
 ## Device Support
 
@@ -13,7 +13,7 @@ AI Generated Wiki: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://dee
 
 - ✅ Ubuntu 25.10 6.17.0-8-generic
 - ✅ Fedora 42 6.17.13-200.fc42.x86_64
-- ⚠️ NixOS: see this [fork](https://github.com/0Tick/zenbook-duo-daemon/tree/copilot/convert-to-nix-flake)
+- ✅  NixOS
 - ⚠️ Other distributions may work, but are not tested
 
 ## Features
@@ -55,7 +55,7 @@ For NixOS users, a Nix flake is available with full declarative configuration su
 Quick setup:
 ```nix
 {
-  inputs.zenbook-duo-daemon.url = "github:PegasisForever/zenbook-duo-daemon";
+  inputs.zenbook-duo-daemon.url = "github:0Tick/zenbook-duo-daemon";
   
   # In your NixOS configuration module
   services.zenbook-duo-daemon = {
