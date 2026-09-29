@@ -13,7 +13,7 @@ Add the flake to your `flake.nix` inputs:
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     zenbook-duo-daemon = {
-      url = "github:PegasisForever/zenbook-duo-daemon";
+      url = "github:0Tick/zenbook-duo-daemon";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -40,7 +40,7 @@ Add the flake to your `flake.nix` inputs:
 To build the daemon package:
 
 ```bash
-nix build github:PegasisForever/zenbook-duo-daemon
+nix build github:0Tick/zenbook-duo-daemon
 ```
 
 ### Development Shell
@@ -48,7 +48,7 @@ nix build github:PegasisForever/zenbook-duo-daemon
 To enter a development environment with all dependencies:
 
 ```bash
-nix develop github:PegasisForever/zenbook-duo-daemon
+nix develop github:0Tick/zenbook-duo-daemon
 ```
 
 ## Configuration
