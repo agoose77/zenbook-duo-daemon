@@ -1,2 +1,2 @@
 [target.'cfg(all())']
-runner = "sudo RUST_LOG=info"
+runner = "sudo env RUST_LOG=debug"

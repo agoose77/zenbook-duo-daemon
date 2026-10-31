@@ -2,7 +2,7 @@
 
 This is a daemon that runs on the Zenbook Duo laptop to handle the keyboard and secondary display under linux.
 
-AI Generated Wiki: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/PegasisForever/zenbook-duo-daemon)
+AI Generated Wiki: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/0Tick/zenbook-duo-daemon)
 
 ## Device Support
 
@@ -13,7 +13,7 @@ AI Generated Wiki: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://dee
 
 - ✅ Ubuntu 25.10 6.17.0-8-generic
 - ✅ Fedora 42 6.17.13-200.fc42.x86_64
-- ⚠️ NixOS: see this [fork](https://github.com/0Tick/zenbook-duo-daemon/tree/copilot/convert-to-nix-flake)
+- ✅  NixOS
 - ⚠️ Other distributions may work, but are not tested
 
 ## Features
@@ -22,6 +22,7 @@ AI Generated Wiki: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://dee
 - ✅ Disable keyboard backlight when idle
 - ✅ Brightness sync between primary and secondary display
 - ✅ Remap keys to run custom commands or key combinations
+- ✅ Remap keyboard touchpad edge gestures for brightness, volume, and media control
 
 | Keyboard Function               | Wired Mode | Bluetooth Mode | Default Mapping              | Remappable via config file? |
 | ------------------------------- | ---------- | -------------- | ---------------------------- | --------------------------- |
@@ -47,6 +48,26 @@ AI Generated Wiki: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://dee
 
 ## Installation
 
+### NixOS (Recommended for Nix users)
+
+For NixOS users, a Nix flake is available with full declarative configuration support. See [NIX_FLAKE.md](NIX_FLAKE.md) for detailed instructions.
+
+Quick setup:
+```nix
+{
+  inputs.zenbook-duo-daemon.url = "github:0Tick/zenbook-duo-daemon";
+  
+  # In your NixOS configuration module
+  services.zenbook-duo-daemon = {
+    enable = true;
+    package = inputs.zenbook-duo-daemon.packages.x86_64-linux.default;
+    # All keybinds and settings are configurable via Nix options
+  };
+}
+```
+
+### Other Linux Distributions
+
 ```bash
 # Upgrade or install the latest release from GitHub
 curl -fsSL https://raw.githubusercontent.com/PegasisForever/zenbook-duo-daemon/refs/heads/master/install.sh | sudo bash -s install
@@ -68,6 +89,8 @@ The install script will:
 ## Configuration
 
 By default, the config file is located at `/etc/zenbook-duo-daemon/config.toml`. You can edit the fn lock, idle timeout, key mappings and keyboard VID:PID in the config file. The instructions are provided in the config file.
+
+Touchpad remapping can be configured in the `[touchpad]` section. The daemon grabs the Zenbook Duo keyboard touchpad, re-emits normal pointer events through a virtual touchpad, and reserves the configured left, right, top, and top-corner regions for gestures. Media controls use `playerctl`; volume uses `wpctl`; brightness uses `qs` with a `brightnessctl` fallback by default. These commands are run in the active graphical user session.
 
 ## Control Pipe
 
